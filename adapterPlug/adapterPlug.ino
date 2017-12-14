@@ -10,7 +10,7 @@
 
 
 const char* ssid = "FusulFusul";
-const char* password = "gf3heTS11c";
+const char* password = "nothing";
 const char* mqtt_server = "iot.eclipse.org";
 const char* mqtt_username = "MeMyselfandINo2";
 const char* mqtt_password = "none";
