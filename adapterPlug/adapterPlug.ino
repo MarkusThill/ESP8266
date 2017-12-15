@@ -2,19 +2,19 @@
  #include <PubSubClient.h>
  #include <string.h>
  #define SLEEP_DELAY_IN_SECONDS  10
- #define TOPIC_ROOT "gf3heTS11c"
+ #define TOPIC_ROOT "diedackel/f/home"
  #define DEVICE_ID  "plug-02"
  #define SLASH "/"
  #define CMD_RELAIS_ON "device=on"
  #define CMD_RELAIS_OFF "device=off"
 
 
-const char* ssid = "FusulFusul";
-const char* password = "nothing";
-const char* mqtt_server = "iot.eclipse.org";
-const char* mqtt_username = "MeMyselfandINo2";
-const char* mqtt_password = "none";
-const char* mqtt_pubs_topic = "myTopic/test";
+const char* ssid = "dlink-C148";
+const char* password = "yhfzi75868";
+const char* mqtt_server = "io.adafruit.com";
+const char* mqtt_username = "diedackel";
+const char* mqtt_password = "94414e96c70d48a9a291a7ab5c7f7059";
+const char* mqtt_pubs_topic = TOPIC_ROOT SLASH DEVICE_ID SLASH "DEBUG";
 const char* mqtt_subs_topic = TOPIC_ROOT SLASH DEVICE_ID;
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -116,7 +116,7 @@ void reconnect() {
         Serial.println("Subscribed to the specified topic");
       else
         Serial.println("Failed to subscribe to the specified topic");
-
+      client.publish(mqtt_pubs_topic, "Hello, here I am...");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
