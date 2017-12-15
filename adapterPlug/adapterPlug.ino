@@ -7,10 +7,11 @@
  #define SLASH "/"
  #define CMD_RELAIS_ON "device=on"
  #define CMD_RELAIS_OFF "device=off"
+ #define STR_CONFIRM_STATE "confirmNewState="
 
 
-const char* ssid = "dlink-C148";
-const char* password = "yhfzi75868";
+const char* ssid = "FusulFusul"; // dlink-C148, FusulFusul
+const char* password = "gf3heTS11c"; // yhfzi75868, gf3heTS11c
 const char* mqtt_server = "io.adafruit.com";
 const char* mqtt_username = "diedackel";
 const char* mqtt_password = "94414e96c70d48a9a291a7ab5c7f7059";
@@ -64,7 +65,7 @@ void setup_wifi() {
   Serial.println(ssid);
   WiFi.begin(ssid, password);
   int i = 0;
-  while (WiFi.status() != WL_CONNECTED && i++ < 3) {
+  while (WiFi.status() != WL_CONNECTED && i++ < 10) {
     delay(500);
     Serial.print(".");
   }
@@ -104,8 +105,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
    
   if(newState == LOW || newState == HIGH) {
-    digitalWrite(GPIO2, newState);
-    sprintf(msg, "confirmNewState=%d", newState);
+    state = newState;
+    digitalWrite(GPIO2, state);
+    sprintf(msg, "%s%d", STR_CONFIRM_STATE, state);
     Serial.println(msg);
     client.publish(mqtt_pubs_topic, msg);
   }  
@@ -118,7 +120,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void reconnect() {
   // Loop until we're reconnected
   int i = 0;
-  while (!client.connected() && i++<3) {
+  while (!client.connected() && i++<10) {
     Serial.println("Attempting MQTT connection...");
     // Attempt to connect
     if (client.connect(DEVICE_ID, mqtt_username, mqtt_password)) {
@@ -132,9 +134,9 @@ void reconnect() {
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
-      Serial.println(" trying again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(50);
+      Serial.println(" trying again in 500 mseconds");
+      // Wait 500 seconds before retrying
+      delay(500);
     }
   }
 }
@@ -142,6 +144,9 @@ void reconnect() {
  * This function will be called after setup() in an infinite loop
  ****/
 void loop() {
+  static int loopCounter = 0;
+  loopCounter++;
+  char msg[50];
   if(WiFi.status() != WL_CONNECTED) {
     setup_wifi();
   }
@@ -149,14 +154,21 @@ void loop() {
     reconnect();
   }
 
-  Serial.println("I am still alive...") ;
+  if(loopCounter % 200 == 0) { // Message every minute
+    Serial.println("I am still alive...") ;
+  }
+    
   // send message to the MQTT topic
   //client.publish(mqtt_pubs_topic, "I am still alive...");
 
   // Example of a retained message
   //client.publish(mqtt_topic, "This will be retained", true);
   client.loop();
-  delay(3000);
+  delay(300);
+  if (client.connected() && (debounce || loopCounter % 200 == 0)) {
+    sprintf(msg, "%s%d", STR_CONFIRM_STATE, state);
+    client.publish(mqtt_pubs_topic, msg, true);
+  }
   // After two seconds we can be sure that the button is debounced. The interrupt can also
   // come during the delay, but it unlikely to happen exactly (few ns) before the delay is over.
   debounce = false;
