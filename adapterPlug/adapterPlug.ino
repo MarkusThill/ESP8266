@@ -2,7 +2,7 @@
  #include <PubSubClient.h>
  #include <string.h>
  #define SLEEP_DELAY_IN_SECONDS  10
- #define TOPIC_ROOT "diedackel/f/home"
+ #define TOPIC_ROOT "diedackel/f"
  #define DEVICE_ID  "plug-02"
  #define SLASH "/"
  #define CMD_RELAIS_ON "device=on"
@@ -14,7 +14,7 @@ const char* password = "yhfzi75868";
 const char* mqtt_server = "io.adafruit.com";
 const char* mqtt_username = "diedackel";
 const char* mqtt_password = "94414e96c70d48a9a291a7ab5c7f7059";
-const char* mqtt_pubs_topic = TOPIC_ROOT SLASH DEVICE_ID SLASH "DEBUG";
+const char* mqtt_pubs_topic = TOPIC_ROOT SLASH DEVICE_ID;
 const char* mqtt_subs_topic = TOPIC_ROOT SLASH DEVICE_ID;
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -45,6 +45,7 @@ void setup() {
   // setup pins
   // GPIO2 will be used to activate the relais
   pinMode(GPIO2, OUTPUT);
+  //pinMode(LED_BUILTIN, OUTPUT); // Does not work. Maybe same pin as TX/RX line?
 }
 void fallingEdge() {
   if(!debounce) {
@@ -77,12 +78,14 @@ void setup_wifi() {
   * The topic itself is given as a parameter of the function.
   ****/
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
+  char msg[50];
   int i;
   char string[50];
   char lowerString[50];
+
+  sprintf(msg, "Message arrived [%s] ", topic);
+  Serial.println(msg);
+  
   // Copy the payload into a C-String and convert all letters into lower-case
   for (i = 0; i < length; i++) {
     string[i] = (char)payload[i];
@@ -90,13 +93,22 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   string[i]=0;
   lowerString[i]=0;
-  Serial.print(lowerString);
+  Serial.println(lowerString);
 
   // If the paylaod contains one of the predefined messages then turn on/off the relais
+  uint8_t newState = -1;
   if(strcmp(lowerString, CMD_RELAIS_ON) == 0)
-    digitalWrite(GPIO2, HIGH);
+     newState = HIGH;
   else if(strcmp(lowerString, CMD_RELAIS_OFF) == 0)
-    digitalWrite(GPIO2, LOW);
+     newState = LOW;
+
+   
+  if(newState == LOW || newState == HIGH) {
+    digitalWrite(GPIO2, newState);
+    sprintf(msg, "confirmNewState=%d", newState);
+    Serial.println(msg);
+    client.publish(mqtt_pubs_topic, msg);
+  }  
 
   Serial.println();
 }
@@ -107,9 +119,9 @@ void reconnect() {
   // Loop until we're reconnected
   int i = 0;
   while (!client.connected() && i++<3) {
-    Serial.print("Attempting MQTT connection...");
+    Serial.println("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect(DEVICE_ID)) {
+    if (client.connect(DEVICE_ID, mqtt_username, mqtt_password)) {
       Serial.println("connected");
       // Subscribe to a topic
       if(client.subscribe(mqtt_subs_topic))
@@ -139,7 +151,7 @@ void loop() {
 
   Serial.println("I am still alive...") ;
   // send message to the MQTT topic
-  client.publish(mqtt_pubs_topic, "I am still alive...");
+  //client.publish(mqtt_pubs_topic, "I am still alive...");
 
   // Example of a retained message
   //client.publish(mqtt_topic, "This will be retained", true);
