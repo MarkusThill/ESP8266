@@ -11,7 +11,7 @@
 
 
 const char* ssid = "FusulFusul"; // dlink-C148, FusulFusul
-const char* password = "gf3heTS11c"; // yhfzi75868, gf3heTS11c
+const char* password = ""; // , 
 const char* mqtt_server = "io.adafruit.com";
 const char* mqtt_username = "diedackel";
 const char* mqtt_password = "94414e96c70d48a9a291a7ab5c7f7059";
