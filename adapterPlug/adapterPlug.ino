@@ -13,8 +13,8 @@
 const char* ssid = "FusulFusul"; // dlink-C148, FusulFusul
 const char* password = ""; // , 
 const char* mqtt_server = "io.adafruit.com";
-const char* mqtt_username = "diedackel";
-const char* mqtt_password = "94414e96c70d48a9a291a7ab5c7f7059";
+const char* mqtt_username = "";
+const char* mqtt_password = "";
 const char* mqtt_pubs_topic = TOPIC_ROOT SLASH DEVICE_ID;
 const char* mqtt_subs_topic = TOPIC_ROOT SLASH DEVICE_ID;
 WiFiClient espClient;
